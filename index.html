@@ -165,8 +165,8 @@ function clearStack(o, stack) {
         lastVal = val;
         }
     }
-    if (tinymce.get('source')) {
-      source.value = tinymce.get('source').getContent();
+    if (tinymce.get('output')) {
+      source.value = tinymce.get('output').getContent();
     }
   } catch (ex) {
     console.log(ex);
