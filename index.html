@@ -52,6 +52,7 @@ tinymce.init({
 var div = document.createElement('div');
 var input = document.getElementById('input');
 var output = document.getElementById('output');
+var source = document.getElementById('source');
 var lastVal = '';
 function e(val) {
   div.innerText = val;
@@ -164,7 +165,7 @@ function clearStack(o, stack) {
         lastVal = val;
         }
     }
-    document.getElementById('source').value = document.getElementById('output').value;
+    source.value = tinymce.get('source').getContent();
   } catch (ex) {
     console.log(ex);
   } finally {
