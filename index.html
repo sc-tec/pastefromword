@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CodePen - Paste from word</title>
+<link rel='stylesheet' href='https://www.executivecentre.com/wp-content/cache/autoptimize/1/css/autoptimize_0476d610f778f2a3f9d560db0562102e.css'>
+<link rel='stylesheet' href='https://www.executivecentre.com/wp-content/cache/autoptimize/1/css/autoptimize_c98d891b0b988d419e32a64caf115f93.css'>
+<style>
+html, body {
+  margin: 0;
+  padding: 0;
+}
+#input {
+  width: 100vw;
+  height: 50px;
+  border-bottom: 2px solid #000;
+  font-size: 10px;
+  background: #ff0;
+}
+#output {
+  width: 100vw;
+  height: 500px;
+}
+</style>
+</head>
+<body translate="no">
+<textarea id="input" placeholder="Copy and paste from your word file"></textarea>
+<textarea id="output"></textarea>
+<script src='https://cloud.tinymce.com/stable/tinymce.min.js?apiKey=qagffr3pkuv17a8on1afax661irst1hbr4e6tbv888sz91jc'></script>
+<script id="rendered-js">
+tinymce.init({
+  selector: '#output',
+  height: 500,
+  theme: 'modern',
+  plugins: 'print preview fullpage powerpaste searchreplace autolink directionality advcode visualblocks visualchars fullscreen image link media template codesample table charmap hr pagebreak nonbreaking anchor toc insertdatetime advlist lists textcolor wordcount tinymcespellchecker a11ychecker imagetools mediaembed  linkchecker contextmenu colorpicker textpattern help',
+  toolbar1: 'formatselect | bold italic strikethrough forecolor backcolor | link | alignleft aligncenter alignright alignjustify  | numlist bullist outdent indent  | removeformat | code',
+  image_advtab: true,
+  templates: [
+    { title: 'Test template 1', content: 'Test 1' },
+    { title: 'Test template 2', content: 'Test 2' }
+  ],
+  content_css: [
+    '//fonts.googleapis.com/css?family=Lato:300,300i,400,400i',
+    '//www.tinymce.com/css/codepen.min.css'
+  ]
+ });
+var div = document.createElement('div');
+var input = document.getElementById('input');
+var output = document.getElementById('output');
+var lastVal = '';
+function e(val) {
+  div.innerText = val;
+  return div.innerHTML;
+}
+function getEl(val, re) {
+  var m = re.exec(val);
+  if (m) {
+    return [m[1], m[2]];
+  } else {
+    return [];
+  }
+}
+
+function getLi(val) {
+  var m = /^(\d[0-9.]*)\s+(.+)$/.exec(val);
+  if (m) {
+    return [m[1],m[2]];
+  } else {
+    return [];
+  }
+}
+function getLi1(val) {
+  var m = /^(\([a-z]+\))\s+(.+)$/i.exec(val);
+  if (m) {
+    return [m[1],m[2]];
+  } else {
+    return [];
+  }
+}
+function getLi2(val) {
+  var m = /^([a-z]+\))\s+(.+)$/i.exec(val);
+  if (m) {
+    return [m[1],m[2]];
+  } else {
+    return [];
+  }
+}
+function getTable(val) {
+    var m = /^(.+)\t(.+)$/.exec(val);
+}
+function tagName(name) {
+    return (name || '').replace(/\d+$/, '');
+}
+function tagNumber(name) {
+    return parseInt(name.substr(tagName(name).length)) || 0;
+}
+function updateStack(name, o, stack) {
+    var last = stack[stack.length - 1] || '';
+    if (last && (tagName(last) !== tagName(name) || tagNumber(last) > tagNumber(name))) {
+        stack.pop();
+        o.push("</", tagName(last), ">");
+        if (tagNumber(last) > tagNumber(name)) {
+            last = stack[stack.length - 1] || "";
+            if (last) {
+                stack.pop();
+                o.push("</", tagName(last), ">");
+            }
+        }
+    }
+    if (last !== name) {
+      o.push("<", tagName(name), ">");
+      stack.push(name);
+    }
+}
+function clearStack(o, stack) {
+    var v = stack.pop();
+    while (v) {
+        o.push('</', v.replace(/\d+$/, ''), '>');
+        v = stack.pop();
+    }
+}
+(function running() {
+  try {
+    if (tinymce.get('output')) {
+        var val = input.value;
+        if (val && val !== lastVal) {
+        var stack = [];
+        var o = [];
+        val.replace(/^.+$/gm, function(m) {
+            var li = '';
+            li = getEl(m, /^(\d[0-9.]*)\s+(.+)$/i);
+            if (li[0]) {
+                updateStack('ul', o, stack);
+                return o.push('<li style="list-style-type:none;margin-left:3rem;padding:0;"><span style="position:absolute;margin-left:-3rem;">', e(li[0]), '</span>"', e(li[1]), '</li>');
+            }
+            li = getEl(m, /^(\([a-z]+\))\s+(.+)$/i);
+            if (li[0]) {
+                updateStack('ul1', o, stack);
+                return o.push('<li style="list-style-type:none;margin-left:3rem;padding:0;"><span style="position:absolute;margin-left:-3rem;">', e(li[0]), '</span>"', e(li[1]), '</li>')
+            }
+            li = getEl(m, /^([a-z]+\))\s+(.+)$/i);
+            if (li[0]) {
+                updateStack('ul2', o, stack);
+                return o.push('<li style="list-style-type:none;margin-left:3rem;padding:0;"><span style="position:absolute;margin-left:-3rem;">', e(li[0]), '</span>"', e(li[1]), '</li>')
+            }
+            li = getEl(m, /^(.+)\s*\t+\s*(.+)$/i);
+            if (li[0]) {
+                updateStack('table', o, stack);
+                return o.push('<tr><td>', e(li[0]), '</td><td>', e(li[1]), '</td></tr>');
+            }
+            updateStack('p', o, stack);
+            o.push(e(m), '<br/>');
+        });
+        clearStack(o, stack);
+        
+        output.value = o.join('');
+        tinymce.get('output')
+            .setContent(output.value);
+        lastVal = val;
+        }
+    }
+  } catch (ex) {
+    console.log(ex);
+  } finally {
+    requestAnimationFrame(running);
+  }
+})();
+    </script>
+</body>
+</html>
