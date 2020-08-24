@@ -30,7 +30,7 @@ html, body {
 <body translate="no">
 <textarea id="input" placeholder="Copy and paste from your word file"></textarea>
 <textarea id="output"></textarea>
-<textarea id="source"></textarea>
+<textarea id="source" readonly></textarea>
 <script src='https://cloud.tinymce.com/stable/tinymce.min.js?apiKey=qagffr3pkuv17a8on1afax661irst1hbr4e6tbv888sz91jc'></script>
 <script id="rendered-js">
 tinymce.init({
@@ -164,7 +164,7 @@ function clearStack(o, stack) {
         lastVal = val;
         }
     }
-    document.getElementById('source').value = document.getElementById('output');
+    document.getElementById('source').value = document.getElementById('output').value;
   } catch (ex) {
     console.log(ex);
   } finally {
