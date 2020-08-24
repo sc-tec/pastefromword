@@ -166,7 +166,10 @@ function clearStack(o, stack) {
         }
     }
     if (tinymce.get('output')) {
-      source.value = tinymce.get('output').getContent();
+       var content = tinymce.get('output').getContent();
+       if (content != source.value) {
+         source.value = content;
+       }
     }
   } catch (ex) {
     console.log(ex);
